@@ -29,7 +29,7 @@ public class UserCrudServiceImpl implements UserCrudService{
 	    }
 
 		@Override
-		public Status updateStatus(Status status) {
+		public Status updateStatus(Status status) throws InterruptedException {
 			return userCrudDao.updateStatus(status);
 		}
 

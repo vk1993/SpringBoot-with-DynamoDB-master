@@ -1,18 +1,19 @@
 package com.example.demo;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.datamodeling.*;
-import com.amazonaws.services.dynamodbv2.model.ScanRequest;
+import com.amazonaws.services.dynamodbv2.document.Table;
+import com.amazonaws.services.dynamodbv2.model.*;
+import com.amazonaws.services.dynamodbv2.util.TableUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
-
-import com.amazonaws.services.dynamodbv2.model.AttributeValue;
-import com.amazonaws.services.dynamodbv2.model.ExpectedAttributeValue;
 
 @Repository
 @Slf4j
@@ -28,7 +29,8 @@ public class UserCrudDaoImpl implements UserCrudDao{
 		dynamoDBMapper.save(user);
 		return user;
 	}
-
+//31999665458
+//	ifsc D visal kumar rao
 	@Override
 	public User readUser(String userId) {
 		return dynamoDBMapper.load(User.class, userId);
@@ -57,9 +59,10 @@ public class UserCrudDaoImpl implements UserCrudDao{
 	}
 
 	@Override
-	public Status updateStatus(Status status) {
+	public Status updateStatus(Status status) throws InterruptedException {
 		String tablename = dynamoDBConfig.getActiveProfileName()+ "health-check";
 		log.info(tablename);
+		createTable(tablename);
 				if(isEmpty(tablename)){
 					System.out.println("---------------->>>>" +status.getESIMhealthCheckStatus());
 					dynamoDBMapper.save(status);
@@ -97,6 +100,26 @@ public class UserCrudDaoImpl implements UserCrudDao{
 		PaginatedScanList<Status> scanResult = dynamoDBMapper.scan(Status.class,dynamoDBScanExpression);
 		String healthCheckID = scanResult.stream().findFirst().get().getHealthCheckID();
 		return healthCheckID;
+	}
+
+	public String createTable(String tableName) throws InterruptedException {
+		List<AttributeDefinition> attributeDefinitions = new ArrayList<>();
+		attributeDefinitions.add(new AttributeDefinition().withAttributeName("healthCheckID").withAttributeType("S"));
+
+		List<KeySchemaElement> keySchemaElements = new ArrayList<>();
+		keySchemaElements.add(new KeySchemaElement().withAttributeName("healthCheckID").withKeyType("S"));
+
+		ProvisionedThroughput provisionedThroughput = new ProvisionedThroughput().withReadCapacityUnits(2L).withWriteCapacityUnits(2L);
+
+		CreateTableRequest createTableRequest = new CreateTableRequest().withTableName(tableName).withAttributeDefinitions(attributeDefinitions).withKeySchema(keySchemaElements)
+				.withProvisionedThroughput(provisionedThroughput);
+		if(!TableUtils.createTableIfNotExists(database,createTableRequest)){
+			log.info("Table is already exist Nothing to do",tableName);
+		}
+		else{
+			TableUtils.waitUntilExists(database,tableName);
+		}
+		return "created";
 	}
 
 }

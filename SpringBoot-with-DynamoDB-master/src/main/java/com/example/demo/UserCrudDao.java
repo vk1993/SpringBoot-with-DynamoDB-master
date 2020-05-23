@@ -12,5 +12,5 @@ public interface UserCrudDao {
 
 	void deleteUser(String userId);
 
-	Status updateStatus(Status status);
+	Status updateStatus(Status status) throws InterruptedException;
 }

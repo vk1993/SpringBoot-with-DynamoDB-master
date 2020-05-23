@@ -21,7 +21,7 @@ public class ScheduledTasks {
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 
     @Scheduled(cron = "8 * * * * *")
-    public void reportCurrentTime() {
+    public void reportCurrentTime() throws InterruptedException {
         List<String> statusList = Arrays.asList("UP","DOWN");
         String status = statusList.get(new Random().nextInt(statusList.size()));
         Status st = userCrudDao.updateStatus(new Status(status));

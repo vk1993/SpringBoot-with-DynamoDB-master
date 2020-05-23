@@ -14,6 +14,6 @@ public interface UserCrudService {
 
 	User updateUser(User user);
 
-	Status updateStatus(Status status);
+	Status updateStatus(Status status) throws InterruptedException;
 
 }
